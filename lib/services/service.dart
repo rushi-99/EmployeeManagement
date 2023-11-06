@@ -97,6 +97,28 @@ class FetchEmployees{
     return results;
   }
 
+  Future<Employees?> updateExistingEmployee(Map<String, Object> body) async{
+    Employees? results;
+    var url = Uri.parse('$baseUrl/api/v1.0/Employee/$apiToken');
+    try{
+      final response = await http.put(url,body: jsonEncode(body),headers: {
+        'apiToken': apiToken,
+        'Content-Type':'application/json'
+      },);
+      print(response.body);
+
+      if(response.statusCode == 200){
+        final data = json.decode(response.body);
+        results = Employees.fromJson(data);
+      }else{
+        print('fetch error');
+      }
+    } catch (e){
+      print('error: $e');
+    }
+    return results;
+  }
+
 
   // Future<List<Employees>> CreateEmployees({String? query}) async{
   //   List<Employees> results = [];
