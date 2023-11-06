@@ -74,6 +74,30 @@ class FetchEmployees{
     }
   }
 
+  Future<Employees?> getSingleEmployee(String? empNo) async{
+    Employees? results;
+    var url = Uri.parse('$baseUrl/api/v1.0/Employee/$empNo$apiToken');
+    try{
+      final response = await http.get(url,headers: {
+        'apiToken': apiToken,
+      },);
+      print(response);
+      if(response.statusCode == 200){
+        final data = json.decode(response.body);
+        results = Employees.fromJson(data);
+        // if(query!= null){
+        //   results = results.where((element) => element.empName!.toLowerCase().contains((query.toLowerCase()))).toList();
+        // }
+      }else{
+        print('fetch error');
+      }
+    } catch (e){
+      print('error: $e');
+    }
+    return results;
+  }
+
+
   // Future<List<Employees>> CreateEmployees({String? query}) async{
   //   List<Employees> results = [];
   //   var url = Uri.parse('$baseUrl/api/v1.0/Employee$apiToken');
