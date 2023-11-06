@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:employeemanagement/services/service.dart';
 import 'package:employeemanagement/model/employees.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:employeemanagement/model/departments.dart';
 
-
-const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 class EditEmployeePage extends StatefulWidget {
   final String? text;
   const EditEmployeePage({super.key, @required this.text});
@@ -17,13 +14,22 @@ class EditEmployeePage extends StatefulWidget {
 class _UpdateEmployeePageState extends State<EditEmployeePage> {
   final FetchEmployees _employees = FetchEmployees();
   Employees? singleEmployee = Employees();
+
+  //department data
+  List<Departments> newListDepartment = <Departments>[];
+  List<String> departments = <String>[];
+  String selectedDepartment = '';
+  String selectedDepartmentCode = '';
+
+
+
+
   TextEditingController empNumber = TextEditingController();
   TextEditingController name = TextEditingController();
   TextEditingController address1 = TextEditingController();
   TextEditingController address2 = TextEditingController();
   TextEditingController address3 = TextEditingController();
   TextEditingController salary = TextEditingController();
-  String dropdownValue = list.first;
   DateTime selectedDate = DateTime.now();
   DateTime selectedBday = DateTime.now();
   bool _isActive = false;
@@ -33,17 +39,59 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
   void initState(){
     super.initState();
     fetchSingleEmployeeDetails();
-
-    // final text = widget.key;
-    // if(text != null){
-    //   final code = text;
-    // }
+    fetchDepartmentData();
   }
+
   Future<void> fetchSingleEmployeeDetails() async{
     try{
       var result = await _employees.getSingleEmployee(widget.text);
       setState(() {
         singleEmployee = result;
+        empNumber.text = singleEmployee?.empNo ?? '';
+        name.text = singleEmployee?.empName ?? '';
+        address1.text = singleEmployee?.empAddressLine1 ?? '';
+        address2.text = singleEmployee?.empAddressLine2 ?? '';
+        address3.text = singleEmployee?.empAddressLine3 ?? '';
+        salary.text = singleEmployee!.basicSalary.toString();
+        _isActive = singleEmployee?.isActive ?? false;
+        selectedBday = singleEmployee?.dateOfBirth != null ? DateTime.parse(singleEmployee!.dateOfBirth!) : DateTime.now();
+        selectedDate = singleEmployee?.dateOfJoin != null ? DateTime.parse(singleEmployee!.dateOfJoin!) : DateTime.now();
+      });
+
+    } catch (e) {
+      print('Error fetching employee details');
+    }
+  }
+
+
+  Future<void> fetchDepartmentData() async{
+    try{
+      var result = await _employees.getDepartments();
+      // if(result.isNotEmpty){
+      //   for (var res in result){
+      //     listDepartment.add(Departments(
+      //       departmentCode: res.departmentCode,
+      //       departmentName: res.departmentName,
+      //       isActive: res.isActive,
+      //     ));
+      //     var depName = res.departmentName ?? "";
+      //     departmentList.add(depName);
+      //   }
+      // }
+      setState(() {
+        if(result.isNotEmpty){
+          for (var res in result){
+            newListDepartment.add(Departments(
+              departmentCode: res.departmentCode,
+              departmentName: res.departmentName,
+              isActive: res.isActive,
+            ));
+
+            var depName = res.departmentName ?? "";
+            departments.add(depName);
+          }
+        }
+        selectedDepartment = departments.first;
       });
 
     } catch (e) {
@@ -101,20 +149,24 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width,
+                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,10.0),
+                width: MediaQuery.of(context).size.width,
                 child: DropdownButton<String>(
-                  value: dropdownValue,
+                  value: selectedDepartment,
                   // initialSelection: list.first,
-                  onChanged: (String? value) {
+                  onChanged: (String? value){
                     setState(() {
-                      dropdownValue = value!;
+                      selectedDepartment = value!;
+                      for(var res in newListDepartment){
+                        if(selectedDepartment == res.departmentName){
+
+                          var a = res.departmentCode ?? "";
+                          selectedDepartmentCode =a;
+                        }
+                      }
                     });
                   },
-                  items: list.map<DropdownMenuItem<String>>((String value) {
+                  items: departments.map<DropdownMenuItem<String>>((String value){
                     return DropdownMenuItem(value: value, child: Text(value),);
                   }).toList(),
                 ),
