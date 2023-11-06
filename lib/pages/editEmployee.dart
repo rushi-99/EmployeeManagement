@@ -8,11 +8,15 @@ import 'dart:convert';
 
 const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 class EditEmployeePage extends StatefulWidget {
+  final String? text;
+  const EditEmployeePage({super.key, @required this.text});
   @override
   _UpdateEmployeePageState createState() => _UpdateEmployeePageState();
 }
 
 class _UpdateEmployeePageState extends State<EditEmployeePage> {
+  final FetchEmployees _employees = FetchEmployees();
+  Employees? singleEmployee = Employees();
   TextEditingController empNumber = TextEditingController();
   TextEditingController name = TextEditingController();
   TextEditingController address1 = TextEditingController();
@@ -23,12 +27,36 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
   DateTime selectedDate = DateTime.now();
   DateTime selectedBday = DateTime.now();
   bool _isActive = false;
+  String? empNo = '';
+
+  @override
+  void initState(){
+    super.initState();
+    fetchSingleEmployeeDetails();
+
+    // final text = widget.key;
+    // if(text != null){
+    //   final code = text;
+    // }
+  }
+  Future<void> fetchSingleEmployeeDetails() async{
+    try{
+      var result = await _employees.getSingleEmployee(widget.text);
+      setState(() {
+        singleEmployee = result;
+      });
+
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Update Employee',
+        title: Text(
+          'Update Employee',
           style: TextStyle(color: Colors.white),
         ), backgroundColor: Colors.pink[300],
       ),
@@ -39,68 +67,76 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: empNumber,
-                  decoration: InputDecoration(labelText: 'Employee Id' ),
+                  decoration: InputDecoration(labelText: 'Employee Id'),
                 ),),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: name,
-                  decoration: InputDecoration(labelText: 'Name' ),
+                  decoration: InputDecoration(labelText: 'Name'),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: address1,
-                  decoration: InputDecoration(labelText: 'Address Line 1' ),
+                  decoration: InputDecoration(labelText: 'Address Line 1'),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: address2,
-                  decoration: InputDecoration(labelText: 'Address Line 2' ),
+                  decoration: InputDecoration(labelText: 'Address Line 2'),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: address3,
-                  decoration: InputDecoration(labelText: 'Address Line 3' ),
+                  decoration: InputDecoration(labelText: 'Address Line 3'),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,10.0),
-                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width,
                 child: DropdownButton<String>(
                   value: dropdownValue,
                   // initialSelection: list.first,
-                  onChanged: (String? value){
+                  onChanged: (String? value) {
                     setState(() {
                       dropdownValue = value!;
                     });
                   },
-                  items: list.map<DropdownMenuItem<String>>((String value){
+                  items: list.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem(value: value, child: Text(value),);
                   }).toList(),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,10.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
                 child: Row(
                   children: [
                     Text(
-                      'Date of Join:   ${selectedDate.year} - ${selectedDate.month} - ${selectedDate.day}',
+                      'Date of Join:   ${selectedDate.year} - ${selectedDate
+                          .month} - ${selectedDate.day}',
                     ),
                     SizedBox(width: 20.0,),
                     ElevatedButton(
                       child: const Icon(Icons.calendar_month),
                       onPressed: () async {
-                        final DateTime? dateTime = await showDatePicker(context: context, initialDate: selectedDate, firstDate: DateTime(1990), lastDate: DateTime.now(),);
-                        if(dateTime != null){
+                        final DateTime? dateTime = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(1990),
+                          lastDate: DateTime.now(),);
+                        if (dateTime != null) {
                           setState(() {
                             selectedDate = dateTime;
                           });
@@ -112,18 +148,23 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
               ),
 
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,10.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
                 child: Row(
                   children: [
                     Text(
-                      'Date of Birth:   ${selectedBday.year} - ${selectedBday.month} - ${selectedBday.day}',
+                      'Date of Birth:   ${selectedBday.year} - ${selectedBday
+                          .month} - ${selectedBday.day}',
                     ),
                     SizedBox(width: 20.0,),
                     ElevatedButton(
                       child: const Icon(Icons.calendar_month),
                       onPressed: () async {
-                        final DateTime? dateTime = await showDatePicker(context: context, initialDate: selectedBday, firstDate: DateTime(1950), lastDate: DateTime.now(),);
-                        if(dateTime != null){
+                        final DateTime? dateTime = await showDatePicker(
+                          context: context,
+                          initialDate: selectedBday,
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now(),);
+                        if (dateTime != null) {
                           setState(() {
                             selectedBday = dateTime;
                           });
@@ -134,18 +175,18 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: salary,
-                  decoration: InputDecoration(labelText: 'Basic Salary' ),
+                  decoration: InputDecoration(labelText: 'Basic Salary'),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: SwitchListTile(
                   title: const Text('isActive: '),
                   value: _isActive,
-                  onChanged: (bool value){
+                  onChanged: (bool value) {
                     setState(() {
                       _isActive = value;
                     });
@@ -153,14 +194,14 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,20.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextButton(
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.pink[200],
                     textStyle: const TextStyle(fontSize: 20),
                   ),
-                  onPressed: (){},
+                  onPressed: () {},
                   child: const Text('Update Employee Details'),
                 ),
               ),
@@ -170,5 +211,4 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
       ),
     );
   }
-
 }
