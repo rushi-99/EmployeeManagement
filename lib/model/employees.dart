@@ -1,4 +1,6 @@
 class Employees {
+  String? status;
+  String? statusDescription;
   String? empNo;
   String? empName;
   String? empAddressLine1;
@@ -11,7 +13,9 @@ class Employees {
   bool? isActive;
 
   Employees(
-      {this.empNo,
+      { this.status,
+        this.statusDescription,
+        this.empNo,
         this.empName,
         this.empAddressLine1,
         this.empAddressLine2,
@@ -23,6 +27,8 @@ class Employees {
         this.isActive});
 
   Employees.fromJson(Map<String, dynamic> json) {
+    status = json['status'];
+    statusDescription = json['statusDescription'];
     empNo = json['empNo'];
     empName = json['empName'];
     empAddressLine1 = json['empAddressLine1'];
@@ -37,6 +43,8 @@ class Employees {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['status'] = this.status;
+    data['statusDescription'] = this.statusDescription;
     data['empNo'] = this.empNo;
     data['empName'] = this.empName;
     data['empAddressLine1'] = this.empAddressLine1;
