@@ -2,27 +2,73 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:employeemanagement/services/service.dart';
 import 'package:employeemanagement/model/employees.dart';
+import 'package:employeemanagement/model/departments.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
-const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 class CreateEmployeePage extends StatefulWidget {
   @override
   _CreateEmployeePageState createState() => _CreateEmployeePageState();
 }
 
 class _CreateEmployeePageState extends State<CreateEmployeePage> {
+  final FetchEmployees _employees = FetchEmployees();
+  //drop down department data
+  List<String> departmentList = <String>[];
+  String selectedDepartment = '';
+  String selectedDepartmentCode = '';
+  String code ='';
+  List<Departments> listDepartment = <Departments>[];
+  List<Departments> newListDepartment = <Departments>[];
+
+  List<String> departments = <String>[];
+  // Map<String,String> dep = <String,String>[];
+
+  // String? dropdownValue = ' ';
+
+  //------
   TextEditingController empNumber = TextEditingController();
   TextEditingController name = TextEditingController();
   TextEditingController address1 = TextEditingController();
   TextEditingController address2 = TextEditingController();
   TextEditingController address3 = TextEditingController();
   TextEditingController salary = TextEditingController();
-  String dropdownValue = list.first;
   DateTime selectedDate = DateTime.now();
   DateTime selectedBday = DateTime.now();
   bool _isActive = false;
+  @override
+  void initState(){
+    super.initState(); // Call the superclass's initState method
+    fetchDepartmentData();
+  }
+
+
+  Future<void> fetchDepartmentData() async{
+    try{
+      var result = await _employees.getDepartments();
+        if(result.length > 0){
+          for (var res in result){
+            listDepartment.add(Departments(
+              departmentCode: res.departmentCode,
+              departmentName: res.departmentName,
+              isActive: res.isActive,
+            ));
+            var resu = res.departmentName ?? "";
+            departmentList.add(resu);
+          }
+        }
+        setState(() {
+          selectedDepartment = departmentList.first;
+          departments = departmentList;
+          newListDepartment = listDepartment;
+          // dropdown = result;
+        });
+
+    } catch (e) {
+      print(e);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -72,22 +118,31 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
                     decoration: InputDecoration(labelText: 'Address Line 3' ),
                   ),
                 ),
+
                 Container(
                   padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,10.0),
                   width: MediaQuery.of(context).size.width,
                   child: DropdownButton<String>(
-                      value: dropdownValue,
+                    value: selectedDepartment,
                     // initialSelection: list.first,
                     onChanged: (String? value){
                       setState(() {
-                        dropdownValue = value!;
+                        selectedDepartment = value!;
+                        for(var res in newListDepartment){
+                          if(selectedDepartment == res.departmentName){
+
+                            var a = res.departmentCode ?? "";
+                            selectedDepartmentCode =a;
+                          }
+                        }
                       });
                     },
-                    items: list.map<DropdownMenuItem<String>>((String value){
+                    items: departments.map<DropdownMenuItem<String>>((String value){
                       return DropdownMenuItem(value: value, child: Text(value),);
                     }).toList(),
                   ),
                 ),
+
                 Container(
                   padding: const EdgeInsets.fromLTRB(20.0,5.0,20.0,10.0),
                   child: Row(
@@ -180,17 +235,18 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
     final joiningDate = selectedDate;
     final bday = selectedBday;
     final activeStatus = _isActive;
-    final income = salary;
+    final income = salary.text;
+    final departmentCode = selectedDepartmentCode;
     final body = {
       "empNo": id,
       "empName": eName,
       "empAddressLine1": add1,
       "empAddressLine2": add2,
       "empAddressLine3": add3,
-      "departmentCode": "MKTD",
+      "departmentCode": departmentCode,
       "dateOfJoin": joiningDate.toIso8601String(),
       "dateOfBirth": bday.toIso8601String(),
-      "basicSalary": 100,
+      "basicSalary": income,
       "isActive": activeStatus,
     };
     final baseUrl = 'http://examination.24x7retail.com';
@@ -200,14 +256,21 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
       'apiToken': apiToken,
       'Content-Type':'application/json'
     },);
-    if(response.statusCode == 201){
+    if(response.statusCode == 200){
       print('Success');
       showSuccessMessage('Successfully created');
+      Navigator.pop(context);
     }else{
-      print('Try again!');
+      print(response.body);
+      showFailedMessage('Please try again!');
     }
   }
   void showSuccessMessage(String message){
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showFailedMessage(String message){
     final snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
