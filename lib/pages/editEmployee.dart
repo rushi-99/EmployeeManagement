@@ -38,8 +38,8 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
   @override
   void initState(){
     super.initState();
-    fetchSingleEmployeeDetails();
     fetchDepartmentData();
+    fetchSingleEmployeeDetails();
   }
 
   Future<void> fetchSingleEmployeeDetails() async{
@@ -56,6 +56,12 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
         _isActive = singleEmployee?.isActive ?? false;
         selectedBday = singleEmployee?.dateOfBirth != null ? DateTime.parse(singleEmployee!.dateOfBirth!) : DateTime.now();
         selectedDate = singleEmployee?.dateOfJoin != null ? DateTime.parse(singleEmployee!.dateOfJoin!) : DateTime.now();
+
+        for(var res in newListDepartment){
+          if(singleEmployee?.departmentCode == res.departmentCode){
+            selectedDepartment = res.departmentName ?? '';
+          }
+        }
       });
 
     } catch (e) {
@@ -67,17 +73,6 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
   Future<void> fetchDepartmentData() async{
     try{
       var result = await _employees.getDepartments();
-      // if(result.isNotEmpty){
-      //   for (var res in result){
-      //     listDepartment.add(Departments(
-      //       departmentCode: res.departmentCode,
-      //       departmentName: res.departmentName,
-      //       isActive: res.isActive,
-      //     ));
-      //     var depName = res.departmentName ?? "";
-      //     departmentList.add(depName);
-      //   }
-      // }
       setState(() {
         if(result.isNotEmpty){
           for (var res in result){
@@ -253,7 +248,7 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                     backgroundColor: Colors.pink[200],
                     textStyle: const TextStyle(fontSize: 20),
                   ),
-                  onPressed: () {},
+                  onPressed: updateEmployee,
                   child: const Text('Update Employee Details'),
                 ),
               ),
@@ -262,5 +257,40 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
         ),
       ),
     );
+  }
+  Future<void> updateEmployee() async{
+    final body = {
+      "empNo": empNumber.text,
+      "empName": name.text,
+      "empAddressLine1": address1.text,
+      "empAddressLine2": address2.text,
+      "empAddressLine3": address3.text,
+      "departmentCode": selectedDepartmentCode,
+      "dateOfJoin": selectedDate.toIso8601String(),
+      "dateOfBirth": selectedBday.toIso8601String(),
+      "basicSalary": salary.text,
+      "isActive": _isActive,
+    };
+
+    try{
+      var result = await _employees.updateExistingEmployee(body);
+
+      if(result?.status == 'Successful'){
+        showSuccessMessage('Employee Updated Successfully!');
+      }else if(result?.status == 'Failed'){
+        showFailedMessage("Please Try again!");
+      }
+    }catch(e){
+      print(e);
+    }
+  }
+  void showSuccessMessage(String message){
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showFailedMessage(String message){
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
