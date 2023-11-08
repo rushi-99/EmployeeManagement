@@ -189,13 +189,15 @@ class _EmployeePageState extends State<EmployeePage> {
   void showSuccessMessage(String message){
     final snackBar = SnackBar(
       content: Text(message),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.green,
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void showFailedMessage(String message){
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(content: Text(message),
+      backgroundColor: Colors.red[900],
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
