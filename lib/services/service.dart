@@ -67,7 +67,6 @@ class FetchEmployees{
         print('fetch error');
         return 'Failed';
       }
-      return 'hello';
     } catch (e){
       print('error: $e');
       return 'Something Went wrong';
@@ -85,9 +84,6 @@ class FetchEmployees{
       if(response.statusCode == 200){
         final data = json.decode(response.body);
         results = Employees.fromJson(data);
-        // if(query!= null){
-        //   results = results.where((element) => element.empName!.toLowerCase().contains((query.toLowerCase()))).toList();
-        // }
       }else{
         print('fetch error');
       }
@@ -119,27 +115,24 @@ class FetchEmployees{
     return results;
   }
 
+  Future<String> createNewEmployee(Map<String, Object> body) async{
+    var url = Uri.parse('$baseUrl/api/v1.0/Employee/$apiToken');
+    try{
+      final response = await http.post(
+        url,
+        body: jsonEncode(body),
+        headers: {'apiToken': apiToken, 'Content-Type': 'application/json'},
+      );
+      if(response.statusCode == 200){
+        return('Successful');
+      }else{
+        var res = Employees.fromJson(json.decode(response.body));
+        return(res.statusDescription ?? '');
+      }
+    } catch (e){
+      print('error: $e');
+    }
+    return 'Something Went wrong';
+  }
 
-  // Future<List<Employees>> CreateEmployees({String? query}) async{
-  //   List<Employees> results = [];
-  //   var url = Uri.parse('$baseUrl/api/v1.0/Employee$apiToken');
-  //   try{
-  //     final response = await http.post(url, body: body,headers: {
-  //       'apiToken': apiToken,
-  //     },);
-  //     print(response);
-  //     if(response.statusCode == 200){
-  //       data = json.decode(response.body);
-  //       results = data.map((e) => Departments.fromJson(e)).toList();
-  //       // if(query!= null){
-  //       //   results = results.where((element) => element.empName!.toLowerCase().contains((query.toLowerCase()))).toList();
-  //       // }
-  //     }else{
-  //       print('fetch error');
-  //     }
-  //   } catch (e){
-  //     print('error: $e');
-  //   }
-  //   return results;
-  // }
 }
