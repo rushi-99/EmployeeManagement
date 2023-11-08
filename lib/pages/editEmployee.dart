@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:employeemanagement/services/service.dart';
 import 'package:employeemanagement/model/employees.dart';
 import 'package:employeemanagement/model/departments.dart';
@@ -56,6 +56,7 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
         _isActive = singleEmployee?.isActive ?? false;
         selectedBday = singleEmployee?.dateOfBirth != null ? DateTime.parse(singleEmployee!.dateOfBirth!) : DateTime.now();
         selectedDate = singleEmployee?.dateOfJoin != null ? DateTime.parse(singleEmployee!.dateOfJoin!) : DateTime.now();
+        selectedDepartmentCode = singleEmployee?.departmentCode ?? '';
 
         for(var res in newListDepartment){
           if(singleEmployee?.departmentCode == res.departmentCode){
@@ -114,6 +115,7 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                 child: TextField(
                   controller: empNumber,
                   decoration: InputDecoration(labelText: 'Employee Id'),
+                  readOnly: true,
                 ),),
               Container(
                 padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
@@ -148,7 +150,10 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                 width: MediaQuery.of(context).size.width,
                 child: DropdownButton<String>(
                   value: selectedDepartment,
-                  // initialSelection: list.first,
+                  underline: Container(
+                    color: Colors.grey,
+                    height: 1,
+                  ),
                   onChanged: (String? value){
                     setState(() {
                       selectedDepartment = value!;
@@ -225,7 +230,8 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
                 padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 20.0),
                 child: TextField(
                   controller: salary,
-                  decoration: InputDecoration(labelText: 'Basic Salary'),
+                  decoration: const InputDecoration(labelText: 'Basic Salary'),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
               ),
               Container(
@@ -285,12 +291,18 @@ class _UpdateEmployeePageState extends State<EditEmployeePage> {
     }
   }
   void showSuccessMessage(String message){
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void showFailedMessage(String message){
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
