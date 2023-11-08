@@ -3,8 +3,6 @@ import 'package:employeemanagement/model/employees.dart';
 import 'package:employeemanagement/services/service.dart';
 import 'package:employeemanagement/pages/editEmployee.dart';
 import 'package:employeemanagement/pages/createEmployeePage.dart';
-import 'package:employeemanagement/model/employees.dart';
-
 
 class EmployeePage extends StatefulWidget {
   @override
@@ -34,28 +32,11 @@ class _EmployeePageState extends State<EmployeePage> {
     }
   }
 
-  // void filteration(String enterKeyword){
-  //   List<Employees> results = [];
-  //   if(enterKeyword.isEmpty){
-  //     results = emp;
-  //   }else{
-  //     results = emp
-  //         .where((employee) => employee.empName!.toLowerCase().contains(enterKeyword.toLowerCase()))
-  //         .toList();
-  //   }
-  //   setState(() {
-  //     emp = results;
-  //   });
-  // }
-
   Future<void> fetchEmployeeData() async{
     try{
-      print('hello');
       var result = await _employees.getEmployees();
-      print(result);
       setState(() {
         emp = result;
-        print(emp);
       });
 
     } catch (e) {
@@ -64,7 +45,6 @@ class _EmployeePageState extends State<EmployeePage> {
   }
 
   void filterEmployees(String searchKeyword) {
-    // Filter the employees based on the search keyword and update the list.
     List<Employees> filteredEmployees = emp
         .where((employee) =>
         employee.empName!.toLowerCase().contains(searchKeyword.toLowerCase()))
@@ -106,10 +86,6 @@ class _EmployeePageState extends State<EmployeePage> {
       ),
       body: RefreshIndicator(
         onRefresh: _refreshEmployees,
-        // child: FutureBuilder<List<Employees>>(
-        //   future: _employees.getEmployees(),
-        //   builder: (context, snapshot){
-        //     var data = snapshot.data;
             child: Column(
               children: [
                 Padding(
@@ -127,7 +103,7 @@ class _EmployeePageState extends State<EmployeePage> {
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: 'search employees',
+                      hintText: 'search employees eg:Name',
                       prefixIcon: Icon(Icons.search),
                     ),
                   ),
@@ -160,7 +136,6 @@ class _EmployeePageState extends State<EmployeePage> {
                                   children: [
                                     IconButton(
                                       onPressed: () {
-                                        print((emp?[index].empNo).toString());
                                         String res = (emp?[index].empNo)
                                             .toString();
                                         deleteEmp(res);
@@ -205,19 +180,21 @@ class _EmployeePageState extends State<EmployeePage> {
       if(result == 'Success'){
         showSuccessMessage('Employee Deleted Successfully!');
       }else if(result == 'Failed'){
-        ShowFailedMessage("Please Try again!");
-
+        showFailedMessage("Please Try again!");
       }
     }catch(e){
       print(e);
     }
   }
   void showSuccessMessage(String message){
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.white,
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void ShowFailedMessage(String message){
+  void showFailedMessage(String message){
     final snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
