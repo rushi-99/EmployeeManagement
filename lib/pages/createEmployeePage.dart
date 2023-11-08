@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:employeemanagement/services/service.dart';
-import 'package:employeemanagement/model/employees.dart';
 import 'package:employeemanagement/model/departments.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter/services.dart';
 
 class CreateEmployeePage extends StatefulWidget {
   @override
@@ -22,9 +20,6 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
   List<Departments> newListDepartment = <Departments>[];
 
   List<String> departments = <String>[];
-  // Map<String,String> dep = <String,String>[];
-
-  // String? dropdownValue = ' ';
 
   //------
   TextEditingController empNumber = TextEditingController();
@@ -38,7 +33,7 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
   bool _isActive = false;
   @override
   void initState(){
-    super.initState(); // Call the superclass's initState method
+    super.initState();
     fetchDepartmentData();
   }
 
@@ -58,10 +53,11 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
           }
         }
         setState(() {
+
           selectedDepartment = departmentList.first;
+          selectedDepartmentCode = listDepartment?.first.departmentCode??'';
           departments = departmentList;
           newListDepartment = listDepartment;
-          // dropdown = result;
         });
 
     } catch (e) {
@@ -124,13 +120,11 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
                   width: MediaQuery.of(context).size.width,
                   child: DropdownButton<String>(
                     value: selectedDepartment,
-                    // initialSelection: list.first,
                     onChanged: (String? value){
                       setState(() {
                         selectedDepartment = value!;
                         for(var res in newListDepartment){
                           if(selectedDepartment == res.departmentName){
-
                             var a = res.departmentCode ?? "";
                             selectedDepartmentCode =a;
                           }
@@ -193,6 +187,7 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
                   child: TextField(
                     controller: salary,
                     decoration: InputDecoration(labelText: 'Basic Salary' ),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
                 ),
                 Container(
@@ -227,51 +222,50 @@ class _CreateEmployeePageState extends State<CreateEmployeePage> {
   }
 
   Future<void> createEmployee() async{
-    final id = empNumber.text;
-    final eName = name.text;
-    final add1 = address1.text;
-    final add2 = address2.text;
-    final add3 = address3.text;
-    final joiningDate = selectedDate;
-    final bday = selectedBday;
-    final activeStatus = _isActive;
-    final income = salary.text;
-    final departmentCode = selectedDepartmentCode;
-    final body = {
-      "empNo": id,
-      "empName": eName,
-      "empAddressLine1": add1,
-      "empAddressLine2": add2,
-      "empAddressLine3": add3,
-      "departmentCode": departmentCode,
-      "dateOfJoin": joiningDate.toIso8601String(),
-      "dateOfBirth": bday.toIso8601String(),
-      "basicSalary": income,
-      "isActive": activeStatus,
-    };
-    final baseUrl = 'http://examination.24x7retail.com';
-    String apiToken = "?D(G+KbPeSgVkYp3s6v9y\$B&E)H@McQf";
-    var url = Uri.parse('$baseUrl/api/v1.0/Employee$apiToken');
-    final response = await http.post(url,body: jsonEncode(body),headers: {
-      'apiToken': apiToken,
-      'Content-Type':'application/json'
-    },);
-    if(response.statusCode == 200){
-      print('Success');
-      showSuccessMessage('Successfully created');
-      Navigator.pop(context);
+    if(empNumber.text.isNotEmpty && name.text.isNotEmpty && address1.text.isNotEmpty && selectedDepartmentCode.isNotEmpty && salary.text.isNotEmpty)
+    {
+      final body = {
+        "empNo": empNumber.text,
+        "empName": name.text,
+        "empAddressLine1": address1.text,
+        "empAddressLine2": address2.text,
+        "empAddressLine3": address3.text,
+        "departmentCode": selectedDepartmentCode,
+        "dateOfJoin": selectedDate.toIso8601String(),
+        "dateOfBirth": selectedBday.toIso8601String(),
+        "basicSalary": salary.text,
+        "isActive": _isActive,
+      };
+      try{
+        var result = await _employees.createNewEmployee(body);
+
+        if(result == 'Successful'){
+          showSuccessMessage('Successfully created!');
+          Navigator.pop(context);
+        }else{
+          showFailedMessage(result);
+        }
+      }catch(e){
+        print(e);
+      }
     }else{
-      print(response.body);
-      showFailedMessage('Please try again!');
+      showFailedMessage("All Fields required");
+
+
     }
   }
+
   void showSuccessMessage(String message){
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(content: Text(message),
+      backgroundColor: Colors.green,
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void showFailedMessage(String message){
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(content: Text('$message.Please try Again! '),
+      backgroundColor: Colors.red[900],
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
