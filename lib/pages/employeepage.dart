@@ -86,98 +86,102 @@ class _EmployeePageState extends State<EmployeePage> {
       ),
       body: RefreshIndicator(
         onRefresh: _refreshEmployees,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      filterEmployees(value);
-                    },
-                    style: TextStyle(height: 1.0,),
-                    decoration: InputDecoration(
-                      fillColor: Colors.pink[50],
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'search employees eg:Name',
-                      prefixIcon: Icon(Icons.search),
-                    ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  filterEmployees(value);
+                },
+                style: TextStyle(height: 1.0,),
+                decoration: InputDecoration(
+                  fillColor: Colors.pink[50],
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
                   ),
+                  hintText: 'search employees eg:Name',
+                  prefixIcon: Icon(Icons.search),
                 ),
-                Expanded(
-                  child: ListView.builder(
-                      itemCount: emp?.length,
-                      itemBuilder: (context,index) {
-                        if (searchKeyword.isEmpty || emp[index].empName!.toLowerCase().contains(searchKeyword.toLowerCase())) {
-                          return Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Card(
-                              child: ListTile(
-                                title: Row(
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .start,
-                                        children: [
-                                          Text('${emp?[index].empName}',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold),),
-                                          Text('${emp?[index].empNo}'),
-                                        ],
-                                      )
-                                    ]
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        String res = (emp?[index].empNo)
-                                            .toString();
-                                        deleteEmp(res);
-                                      },
-                                      icon: const Icon(Icons.delete),
-                                      color: Colors.red[400],
-                                      tooltip: 'Delete Employee',
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditEmployeePage(
-                                                      text: emp?[index].empNo),
-                                            ));
-                                      },
-                                      icon: const Icon(Icons.edit),
-                                      color: Colors.blue[400],
-                                      tooltip: 'Edit Employee',
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                      }else{
-                          return SizedBox.shrink();
-                        }
-                      }),
-                ),
-              ],
+              ),
             ),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: emp?.length,
+                  itemBuilder: (context,index) {
+                    if (searchKeyword.isEmpty || emp[index].empName!.toLowerCase().contains(searchKeyword.toLowerCase())) {
+                      return Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Card(
+                          child: ListTile(
+                            title: Row(
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start,
+                                    children: [
+                                      Text('${emp?[index].empName}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),),
+                                      Text('${emp?[index].empNo}'),
+                                    ],
+                                  )
+                                ]
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    String res = (emp?[index].empNo)
+                                        .toString();
+                                    deleteEmp(res);
+                                  },
+                                  icon: const Icon(Icons.delete),
+                                  color: Colors.red[400],
+                                  tooltip: 'Delete Employee',
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              EditEmployeePage(
+                                                  text: emp?[index].empNo),
+                                        ));
+                                  },
+                                  icon: const Icon(Icons.edit),
+                                  color: Colors.blue[400],
+                                  tooltip: 'Edit Employee',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }else{
+                      return SizedBox.shrink();
+                    }
+                  }),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  deleteEmp(String res) async{
+  deleteEmp(String id) async{
     try{
-      var result = await _employees.deleteEmployeeById(res);
+      final index = emp.indexWhere((element) => element.empNo == id);
+      var result = await _employees.deleteEmployeeById(id);
       if(result == 'Success'){
+        setState(() {
+          emp.removeAt(index);
+        });
         showSuccessMessage('Employee Deleted Successfully!');
       }else if(result == 'Failed'){
         showFailedMessage("Please Try again!");
